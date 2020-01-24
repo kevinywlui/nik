@@ -5,8 +5,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func CreateTable() {
-	database, _ := sql.Open("sqlite3", "./nik.db")
+func CreateTable(db_name string) {
+	database, _ := sql.Open("sqlite3", db_name)
 	statement, _ := database.Prepare(`
     CREATE TABLE IF NOT EXISTS frecency (path TEXT PRIMARY KEY, score REAL);
     `)

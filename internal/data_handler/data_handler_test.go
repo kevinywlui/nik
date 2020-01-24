@@ -3,16 +3,21 @@ package data_handler
 import (
 	"testing"
 
+        "os"
 	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
 )
 
+// use a test db
+var test_db = "./test.db"
+
 func TestCreateTable(t *testing.T) {
+
 	// create the table
-	CreateTable()
+	CreateTable(test_db)
 
 	// check that it opens
-	database, err := sql.Open("sqlite3", "./nik.db")
+	database, err := sql.Open("sqlite3", test_db)
 	if err != nil {
 		t.Errorf("Unable to open database")
 	}
@@ -35,4 +40,8 @@ func TestCreateTable(t *testing.T) {
 	if got != want {
 		t.Errorf("Column mismatch, want %q, got %q", want, got)
 	}
+}
+
+func TestClean(t *testing.T) {
+    os.Remove(test_db)
 }
