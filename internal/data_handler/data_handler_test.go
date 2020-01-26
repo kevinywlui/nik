@@ -3,18 +3,19 @@ package data_handler
 import (
 	"testing"
 
-        "os"
 	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
+	"os"
 )
 
 // use a test db
 var test_db = "./test.db"
 
 func TestCreateTable(t *testing.T) {
+	test_data_h := DataHandler{test_db}
 
 	// create the table
-	CreateTable(test_db)
+	CreateTable(test_data_h)
 
 	// check that it opens
 	database, err := sql.Open("sqlite3", test_db)
@@ -43,8 +44,8 @@ func TestCreateTable(t *testing.T) {
 }
 
 func TestClean(t *testing.T) {
-    err := os.Remove(test_db)
-    if err != nil {
-        t.Errorf("Error removing test db")
-    }
+	err := os.Remove(test_db)
+	if err != nil {
+		t.Errorf("Error removing test db")
+	}
 }
