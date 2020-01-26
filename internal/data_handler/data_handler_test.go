@@ -43,5 +43,8 @@ func TestCreateTable(t *testing.T) {
 }
 
 func TestClean(t *testing.T) {
-    os.Remove(test_db)
+    err := os.Remove(test_db)
+    if err != nil {
+        t.Errorf("Error removing test db")
+    }
 }
