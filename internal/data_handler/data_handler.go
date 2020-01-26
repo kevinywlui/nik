@@ -19,7 +19,3 @@ func CreateTable(data_h DataHandler) {
 	defer db.Close()
 }
 
-func DecayTable(db_name string) {
-	// loop through all rows and multiply scores by 0.99
-	const decay_factor = 0.99
-}
