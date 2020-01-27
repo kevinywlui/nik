@@ -33,3 +33,17 @@ INSERT INTO frecency VALUES ("%s", %f);
 
 	defer db.Close()
 }
+
+func (data_h DataHandler) DecayTable() {
+	db, _ := sql.Open("sqlite3", data_h.db_name)
+
+	const decay_factor = 0.99
+	query := fmt.Sprintf(`
+UPDATE frecency SET score = %f*score;
+`, decay_factor)
+
+	statement, _ := db.Prepare(query)
+	statement.Exec()
+
+	defer db.Close()
+}

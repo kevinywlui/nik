@@ -4,7 +4,9 @@ import (
 	"testing"
 
 	"database/sql"
+	"fmt"
 	_ "github.com/mattn/go-sqlite3"
+	"math/rand"
 )
 
 // use a test db
@@ -45,8 +47,14 @@ func TestCreateTable(t *testing.T) {
 func TestAddPath(t *testing.T) {
 	test_data_h := DataHandler{test_db}
 
-	test_data_h.AddPath("hello")
-	test_data_h.AddPath("world")
+	new_path := fmt.Sprintf("test_path%d", rand.Uint32()%10000)
+	test_data_h.AddPath(new_path)
+}
+
+func TestDecayTable(t *testing.T) {
+	test_data_h := DataHandler{test_db}
+
+	test_data_h.DecayTable()
 }
 
 // func TestClean(t *testing.T) {
