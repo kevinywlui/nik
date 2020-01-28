@@ -10,6 +10,8 @@ var test_db = "./test.db"
 func TestFull(t *testing.T) {
 	test_data_h := DataHandler{test_db}
 
+        // drop any old table
+	test_data_h.DropTable()
 	// create the table
 	test_data_h.CreateTable()
 

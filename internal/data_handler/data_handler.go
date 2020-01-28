@@ -10,6 +10,16 @@ type DataHandler struct {
 	db_name string
 }
 
+func (data_h DataHandler) DropTable() {
+	db, _ := sql.Open("sqlite3", data_h.db_name)
+	defer db.Close()
+	statement, _ := db.Prepare(`
+DROP TABLE IF EXISTS frecency;
+    `)
+	statement.Exec()
+
+}
+
 func (data_h DataHandler) CreateTable() {
 	db, _ := sql.Open("sqlite3", data_h.db_name)
 	defer db.Close()
