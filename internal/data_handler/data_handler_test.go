@@ -2,64 +2,38 @@ package data_handler
 
 import (
 	"testing"
-
-	"database/sql"
-	"fmt"
-	_ "github.com/mattn/go-sqlite3"
-	"math/rand"
 )
 
 // use a test db
 var test_db = "./test.db"
 
-func TestCreateTable(t *testing.T) {
+func TestFull(t *testing.T) {
 	test_data_h := DataHandler{test_db}
 
 	// create the table
 	test_data_h.CreateTable()
 
-	// check that it opens
-	database, err := sql.Open("sqlite3", test_db)
-	if err != nil {
-		t.Errorf("Unable to open database")
+	// add some paths
+	test_data_h.AddPath("A", 10)
+	test_data_h.AddPath("B", 100)
+
+	// verify that there are 2 paths
+	var want_pre_decay uint
+	want_pre_decay = 2
+	got_pre_decay := test_data_h.Size()
+	if got_pre_decay != want_pre_decay {
+		t.Errorf("Incorrect number of rows, want %d, got %d", want_pre_decay, got_pre_decay)
 	}
 
-	// check that the columns are correct
-	rows, err := database.Query(`
-    SELECT name FROM
-    pragma_table_info('frecency');
-    `)
-	if err != nil {
-		t.Errorf("Unable to open frecency database")
-	}
-	want := [2]string{"path", "score"}
-	var got [2]string
-	i := 0
-	for rows.Next() {
-		rows.Scan(&got[i])
-		i++
-	}
-	if got != want {
-		t.Errorf("Column mismatch, want %q, got %q", want, got)
+	// decay the table and prune the A path away
+	// verify that only B is left
+	test_data_h.Decay(0.5)
+	test_data_h.Prune(10)
+
+	var want_post_decay uint
+	want_post_decay = 1
+	got_post_decay := test_data_h.Size()
+	if got_post_decay != want_post_decay {
+		t.Errorf("Incorrect number of rows, want %d, got %d", want_post_decay, got_post_decay)
 	}
 }
-
-func TestAddPath(t *testing.T) {
-	test_data_h := DataHandler{test_db}
-
-	new_path := fmt.Sprintf("test_path%d", rand.Uint32()%10000)
-	test_data_h.AddPath(new_path)
-}
-
-func TestDecayTable(t *testing.T) {
-	test_data_h := DataHandler{test_db}
-
-	test_data_h.DecayTable()
-}
-
-// func TestClean(t *testing.T) {
-// 	err := os.Remove(test_db)
-// 	if err != nil {
-// 		t.Errorf("Error removing test db")
-// 	}
-// }
