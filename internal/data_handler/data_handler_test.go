@@ -9,11 +9,11 @@ var test_db = "./test.db"
 
 func TestFull(t *testing.T) {
 	test_data_h := DataHandler{
-		test_db,
-		100,  // starting_weight
-		10,   // inc_weight
-		0.5,  // decay_factor
-		55.0, // prune_threshold
+            db_name: test_db,
+            starting_weight: 100,
+            inc_weight: 10,
+            decay_factor: 0.5,
+            prune_threshold: 55.0,
 	}
 
 	// drop any old table
