@@ -2,14 +2,19 @@ package data_handler
 
 import (
 	"testing"
-        "fmt"
 )
 
 // use a test db
 var test_db = "./test.db"
 
 func TestFull(t *testing.T) {
-	test_data_h := DataHandler{test_db}
+	test_data_h := DataHandler{
+		test_db,
+		100,  // starting_weight
+		10,   // inc_weight
+		0.5,  // decay_factor
+		55.0, // prune_threshold
+	}
 
 	// drop any old table
 	test_data_h.DropTable()
@@ -17,11 +22,12 @@ func TestFull(t *testing.T) {
 	test_data_h.CreateTable()
 
 	// add some paths
-	test_data_h.UpdatePath("A", 100, 10)
-	test_data_h.UpdatePath("B", 100, 10)
-	test_data_h.UpdatePath("A", 100, 10)
+	test_data_h.UpdatePath("A")
+	test_data_h.UpdatePath("A")
+	test_data_h.UpdatePath("A")
+	test_data_h.UpdatePath("A")
+	test_data_h.UpdatePath("B")
 
-        fmt.Print(test_data_h.GetOrderedPaths())
 	// verify that there are 2 paths
 	var want_pre_decay uint
 	want_pre_decay = 2
@@ -32,8 +38,8 @@ func TestFull(t *testing.T) {
 
 	// decay the table and prune the A path away
 	// verify that only B is left
-	test_data_h.Decay(0.5)
-	test_data_h.Prune(10)
+	test_data_h.Decay()
+	test_data_h.Prune()
 
 	var want_post_decay uint
 	want_post_decay = 1
