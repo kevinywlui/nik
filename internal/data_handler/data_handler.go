@@ -9,29 +9,29 @@ import (
 )
 
 type DataHandler struct {
-	db_name         string
-	starting_weight float32
-	inc_weight      float32
-	decay_factor    float32
-	prune_threshold float32
+	Db_name         string
+	Starting_weight float32
+	Inc_weight      float32
+	Decay_factor    float32
+	Prune_threshold float32
 }
 
 func (data_h DataHandler) DropTable() {
-	db, _ := sql.Open("sqlite3", data_h.db_name)
+	db, _ := sql.Open("sqlite3", data_h.Db_name)
 	defer db.Close()
 	statement, _ := db.Prepare("DROP TABLE IF EXISTS frecency;")
 	statement.Exec()
 }
 
 func (data_h DataHandler) CreateTable() {
-	db, _ := sql.Open("sqlite3", data_h.db_name)
+	db, _ := sql.Open("sqlite3", data_h.Db_name)
 	defer db.Close()
 	statement, _ := db.Prepare("CREATE TABLE IF NOT EXISTS frecency (path TEXT PRIMARY KEY, score REAL);")
 	statement.Exec()
 }
 
 func (data_h DataHandler) UpdatePath(path string) {
-	db, _ := sql.Open("sqlite3", data_h.db_name)
+	db, _ := sql.Open("sqlite3", data_h.Db_name)
 	defer db.Close()
 
 	// check if path already exists
@@ -44,38 +44,38 @@ func (data_h DataHandler) UpdatePath(path string) {
 	var update_query string
 	if path_exists_int == 1 {
 		update_query = fmt.Sprintf(`UPDATE frecency SET score=score+%f
-            WHERE path="%s";`, data_h.inc_weight, path)
+            WHERE path="%s";`, data_h.Inc_weight, path)
 	} else {
 		update_query = fmt.Sprintf(`INSERT INTO frecency VALUES ("%s", %f)`,
-			path, data_h.starting_weight)
+			path, data_h.Starting_weight)
 	}
 	statement, _ := db.Prepare(update_query)
 	statement.Exec()
 }
 
 func (data_h DataHandler) Decay() {
-	db, _ := sql.Open("sqlite3", data_h.db_name)
+	db, _ := sql.Open("sqlite3", data_h.Db_name)
 	defer db.Close()
 
-	query := fmt.Sprintf(`UPDATE frecency SET score = %f*score;`, data_h.decay_factor)
+	query := fmt.Sprintf(`UPDATE frecency SET score = %f*score;`, data_h.Decay_factor)
 
 	statement, _ := db.Prepare(query)
 	statement.Exec()
 }
 
 func (data_h DataHandler) Prune() {
-	db, _ := sql.Open("sqlite3", data_h.db_name)
+	db, _ := sql.Open("sqlite3", data_h.Db_name)
 	defer db.Close()
 
 	query := fmt.Sprintf(`DELETE FROM frecency WHERE score < %f;`,
-		data_h.prune_threshold)
+		data_h.Prune_threshold)
 
 	statement, _ := db.Prepare(query)
 	statement.Exec()
 }
 
 func (data_h DataHandler) Size() uint {
-	db, _ := sql.Open("sqlite3", data_h.db_name)
+	db, _ := sql.Open("sqlite3", data_h.Db_name)
 	defer db.Close()
 
 	row := db.QueryRow("SELECT COUNT(*) FROM frecency;")
@@ -86,7 +86,7 @@ func (data_h DataHandler) Size() uint {
 }
 
 func (data_h DataHandler) ListPaths() string {
-	db, _ := sql.Open("sqlite3", data_h.db_name)
+	db, _ := sql.Open("sqlite3", data_h.Db_name)
 	defer db.Close()
 
 	rows, _ := db.Query("SELECT path FROM frecency ORDER BY score;")
