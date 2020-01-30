@@ -85,11 +85,11 @@ func (data_h DataHandler) Size() uint {
 	return count
 }
 
-func (data_h DataHandler) GetOrderedPaths() string {
+func (data_h DataHandler) ListPaths() string {
 	db, _ := sql.Open("sqlite3", data_h.db_name)
 	defer db.Close()
 
-	rows, _ := db.Query("SELECT path FROM frecency ORDER BY score LIMIT 10;")
+	rows, _ := db.Query("SELECT path FROM frecency ORDER BY score;")
 	defer rows.Close()
 
 	var sb strings.Builder
