@@ -2,6 +2,8 @@ package data_handler
 
 import (
 	"strings"
+        "text/tabwriter"
+        "os"
 
 	"database/sql"
 	"fmt"
@@ -51,27 +53,20 @@ func (data_h DataHandler) UpdatePath(path string) {
 	}
 	statement, _ := db.Prepare(update_query)
 	statement.Exec()
-}
 
-func (data_h DataHandler) Decay() {
-	db, _ := sql.Open("sqlite3", data_h.Db_name)
-	defer db.Close()
-
-	query := fmt.Sprintf(`UPDATE frecency SET score = %f*score;`, data_h.Decay_factor)
-
-	statement, _ := db.Prepare(query)
+	// Decay the scores in the table
+	decay_query := fmt.Sprintf(`UPDATE frecency SET score = %f*score;`, data_h.Decay_factor)
+	statement, _ = db.Prepare(decay_query)
 	statement.Exec()
-}
 
-func (data_h DataHandler) Prune() {
-	db, _ := sql.Open("sqlite3", data_h.Db_name)
-	defer db.Close()
+	// Prune scores that are too low
+	if data_h.Prune_threshold > 0 {
+		query := fmt.Sprintf(`DELETE FROM frecency WHERE score < %f;`,
+			data_h.Prune_threshold)
 
-	query := fmt.Sprintf(`DELETE FROM frecency WHERE score < %f;`,
-		data_h.Prune_threshold)
-
-	statement, _ := db.Prepare(query)
-	statement.Exec()
+		statement, _ := db.Prepare(query)
+		statement.Exec()
+	}
 }
 
 func (data_h DataHandler) Size() uint {
@@ -100,4 +95,22 @@ func (data_h DataHandler) ListPaths() string {
 		sb.WriteString("\n")
 	}
 	return sb.String()
+}
+
+func (data_h DataHandler) PrintTable() {
+	db, _ := sql.Open("sqlite3", data_h.Db_name)
+	defer db.Close()
+
+	rows, _ := db.Query("SELECT path, score FROM frecency ORDER BY score;")
+	defer rows.Close()
+
+	var path string
+        var score float32
+	writer := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', tabwriter.AlignRight)
+	for rows.Next() {
+		rows.Scan(&path, &score)
+                tabbed_string := fmt.Sprintf("%.2f\t%s", score, path)
+                fmt.Fprintln(writer, tabbed_string)
+	}
+        writer.Flush()
 }
