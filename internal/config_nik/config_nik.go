@@ -1,15 +1,20 @@
 package config_nik
 
 import (
-        "github.com/kevinywlui/nik/internal/data_handler"
+	"github.com/kevinywlui/nik/internal/data"
+	homedir "github.com/mitchellh/go-homedir"
 )
 
-var DataHandler = data_handler.DataHandler{
-                    Db_name: "./nik.db",
-                    Starting_weight: 100,
-                    Inc_weight: 10,
-                    Decay_factor: 0.5,
-                    Prune_threshold: 1.0,
-                }
+var DataHandler = data.DataHandler{
+	Db_file:         "nik.db",
+	Starting_weight: 100,
+	Inc_weight:      100,
+	Decay_factor:    0.99,
+	Prune_threshold: 1.0,
+}
 
-func Configure() {}
+func init() {
+	p := &DataHandler
+	path := "~/.nik.db"
+	p.Db_file, _ = homedir.Expand(path)
+}
