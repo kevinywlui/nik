@@ -1,60 +1,39 @@
 package util
 
 import (
-	"reflect"
-	"runtime"
-	"strings"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
-type matcher_t func(string, string) bool
-type asserter_t func(string, string, bool)
-
-func boolToString(b bool) string {
-	if b {
-		return "true"
-	} else {
-		return "false"
-	}
-}
-
-func getFunctionName(f interface{}) string {
-	f_ptr := reflect.ValueOf(f).Pointer()
-	full_name := runtime.FuncForPC(f_ptr).Name()
-	split_full_name := strings.Split(full_name, "/")
-	return split_full_name[len(split_full_name)-1]
-}
-
-func asserterBuilder(t *testing.T, f matcher_t) asserter_t {
-	return func(small string, big string, expect bool) {
-		got := f(small, big)
-		if got != expect {
-			f_name := getFunctionName(f)
-			expect_str := boolToString(expect)
-			got_str := boolToString(got)
-			t.Errorf("Got %s(%q, %q)==%s, expected %s", f_name, small, big, got_str, expect_str)
-		}
-	}
-}
-
 func TestIsSubsequence(t *testing.T) {
-	asserter := asserterBuilder(t, IsSubsequence)
+	assert := assert.New(t)
+	assertIsSubSequence := func(small string, big string) bool {
+		return assert.True(IsSubsequence(small, big))
+	}
+	assertNotIsSubSequence := func(small string, big string) bool {
+		return assert.False(IsSubsequence(small, big))
+	}
+	assertIsSubSequence("abc", "abcd")
+	assertIsSubSequence("", "")
+	assertIsSubSequence("a", "a")
+	assertIsSubSequence("ad", "abcd")
+	assertIsSubSequence("z", "kevinkevinkevinz")
 
-	asserter("abc", "abcd", true)
-	asserter("abc", "xyz", false)
-	asserter("", "", true)
-	asserter("a", "a", true)
-	asserter("a", "", false)
-	asserter("ad", "abcd", true)
-	asserter("abc", "kevinkevinkevin", false)
-	asserter("z", "kevinkevinkevinz", true)
+	assertNotIsSubSequence("abc", "xyz")
+	assertNotIsSubSequence("abc", "kevinkevinkevin")
+	assertNotIsSubSequence("a", "")
 }
 
 func TestIsBaseSubsequence(t *testing.T) {
-	asserter := asserterBuilder(t, IsBaseSubsequence)
-
-	asserter("abc", "/abc/xyz", false)
-	asserter("abc", "/a/bc", false)
-	asserter("abc", "/abc", true)
-	asserter("abc", "/abc/", true)
+	assert := assert.New(t)
+	assertIsBaseSubsequence := func(small string, big string) bool {
+		return assert.True(IsBaseSubsequence(small, big))
+	}
+	assertNotIsBaseSubsequence := func(small string, big string) bool {
+		return assert.False(IsBaseSubsequence(small, big))
+	}
+	assertNotIsBaseSubsequence("abc", "/abc/xyz")
+	assertNotIsBaseSubsequence("abc", "/a/bc")
+	assertIsBaseSubsequence("abc", "/abc")
+	assertIsBaseSubsequence("abc", "/abc/")
 }
