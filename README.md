@@ -1,6 +1,13 @@
 # nik
 
-`nik` provides an easy way to navigate between distant locations in the filesystem.
+`nik` - cd around the filesystem using subsequence matching and frecency.
+Powered by `golang` and `sqlite`.
+
+This program is essentially the same as
+[autojump](https://github.com/wting/autojump),
+[z](https://github.com/rupa/z),
+or
+[fasd](https://github.com/clvv/fasd). It was created to help me learn `golang`.
 
 ## Usage
 
