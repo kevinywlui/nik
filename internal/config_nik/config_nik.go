@@ -7,7 +7,6 @@ import (
 
 var DataHandler = data.DataHandler{
 	Db_file:         "nik.db",
-	Starting_weight: 100,
 	Inc_weight:      100,
 	Decay_factor:    0.99,
 	Prune_threshold: 1.0,

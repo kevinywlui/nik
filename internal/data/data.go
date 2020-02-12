@@ -14,7 +14,6 @@ import (
 
 type DataHandler struct {
 	Db_file         string
-	Starting_weight float32
 	Inc_weight      float32
 	Decay_factor    float32
 	Prune_threshold float32
@@ -95,7 +94,7 @@ func (data_h DataHandler) UpdatePath(path string) {
 		prefix := tokens[0]
 		base := tokens[1]
 		update_query = fmt.Sprintf(`INSERT INTO frecency VALUES (%q, %f, %q, %q)`,
-			path, data_h.Starting_weight, prefix, base)
+			path, data_h.Inc_weight, prefix, base)
 	}
 	db.Exec(update_query)
 
