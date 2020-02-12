@@ -5,7 +5,7 @@ __nik_update() {
 }
 
 j() {
-        cd `nik get $1`
+        cd `nik get $@`
 }
 
 add-zsh-hook chpwd __nik_update
