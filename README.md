@@ -1,6 +1,6 @@
 # nik
 
-`nik` - cd around the filesystem using subsequence matching and frecency.
+`nik` - cd using subsequence matching and frecency.
 Powered by `golang` and `sqlite`.
 
 This program is essentially the same as
