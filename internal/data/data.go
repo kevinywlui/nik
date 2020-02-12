@@ -55,7 +55,7 @@ func (data_h DataHandler) DropTable() error {
 func (data_h DataHandler) CreateTable() error {
 	db, _ := sql.Open("sqlite3", data_h.Db_file)
 	defer db.Close()
-	_, err := db.Exec("CREATE TABLE IF NOT EXISTS frecency (path TEXT PRIMARY KEY, score REAL);")
+	_, err := db.Exec("CREATE TABLE IF NOT EXISTS frecency (path TEXT PRIMARY KEY, score REAL, prefix TEXT, base TEXT);")
 	if err != nil {
 		return fmt.Errorf("Unable to execute the select query")
 	}
@@ -77,19 +77,25 @@ func (data_h DataHandler) UpdatePath(path string) {
 	defer db.Close()
 
 	// check if path already exists
-	existence_query := fmt.Sprintf(`SELECT COUNT(*) FROM frecency WHERE path="%s" LIMIT 1;`, path)
+	existence_query := fmt.Sprintf(`SELECT COUNT(*) FROM frecency WHERE path=%q LIMIT 1;`, path)
 	row := db.QueryRow(existence_query)
 
 	var path_exists_int uint
 	row.Scan(&path_exists_int)
 
+	// Increment score if path already exists. Insert into table otherwise.
 	var update_query string
 	if path_exists_int == 1 {
 		update_query = fmt.Sprintf(`UPDATE frecency SET score=score+%f
             WHERE path="%s";`, data_h.Inc_weight, path)
+
 	} else {
-		update_query = fmt.Sprintf(`INSERT INTO frecency VALUES ("%s", %f)`,
-			path, data_h.Starting_weight)
+		// Compute the tokens if needed.
+		tokens := util.PrefixBaseSplit(path)
+		prefix := tokens[0]
+		base := tokens[1]
+		update_query = fmt.Sprintf(`INSERT INTO frecency VALUES (%q, %f, %q, %q)`,
+			path, data_h.Starting_weight, prefix, base)
 	}
 	db.Exec(update_query)
 
@@ -174,22 +180,42 @@ func (data_h DataHandler) ListPaths(descending bool, scores bool) (string, error
 	}
 }
 
-// GetTopMatch will return the matching path with the highest score.
-func (data_h DataHandler) GetTopMatch(small string) (string, bool, error) {
+// GetTopBaseMatch will return the matching path with the highest score.
+func (data_h DataHandler) GetTopBaseMatch(query_base string) (string, bool, error) {
 	db, _ := sql.Open("sqlite3", data_h.Db_file)
 	defer db.Close()
 
-	rows, err := db.Query("SELECT path FROM frecency ORDER BY score DESC;")
+	rows, err := db.Query("SELECT path, base FROM frecency ORDER BY score DESC;")
 	defer rows.Close()
 	if err != nil {
 		return "", false, fmt.Errorf("Unable to execute select")
 	}
 
-	var big string
+	var path, base string
 	for rows.Next() {
-		rows.Scan(&big)
-		if util.IsBaseSubsequence(small, big) {
-			return big, true, nil
+		rows.Scan(&path, &base)
+		if util.IsSubsequence(query_base, base) {
+			return path, true, nil
+		}
+	}
+	return "", false, nil
+}
+
+func (data_h DataHandler) GetTopPrefixBaseMatch(query_prefix, query_base string) (string, bool, error) {
+	db, _ := sql.Open("sqlite3", data_h.Db_file)
+	defer db.Close()
+
+	rows, err := db.Query("SELECT path, prefix, base FROM frecency ORDER BY score DESC;")
+	defer rows.Close()
+	if err != nil {
+		return "", false, fmt.Errorf("Unable to execute select")
+	}
+
+	var path, prefix, base string
+	for rows.Next() {
+		rows.Scan(&path, &prefix, &base)
+		if util.IsSubsequence(query_prefix, prefix) && util.IsSubsequence(query_base, base) {
+			return path, true, nil
 		}
 	}
 	return "", false, nil
