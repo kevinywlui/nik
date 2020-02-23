@@ -4,7 +4,7 @@
 __nik_update() {
         nik update `pwd`
 }
-add-zsh-hook chpwd __nik_update.
+add-zsh-hook chpwd __nik_update
 
 # single-letter alias to access nik
 j() {
