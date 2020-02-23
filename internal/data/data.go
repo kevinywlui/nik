@@ -13,10 +13,10 @@ import (
 )
 
 type DataHandler struct {
-	Db_file         string
-	Inc_weight      float64
-	Decay_factor    float64
-	Prune_threshold float64
+	DbFile         string
+	IncWeight      float64
+	DecayFactor    float64
+	PruneThreshold float64
 }
 
 // isFile returns whether path exists on the filesystem
@@ -33,12 +33,12 @@ func isFile(path string) bool {
 // returned if `data_h.Db_file` is not found.
 func (data_h DataHandler) DropTable() error {
 	// Check if `data_h.Db_file` exists
-	if !isFile(data_h.Db_file) {
-		return fmt.Errorf("Database file %s not found", data_h.Db_file)
+	if !isFile(data_h.DbFile) {
+		return fmt.Errorf("Database file %s not found", data_h.DbFile)
 	}
 
 	// Open the database
-	db, _ := sql.Open("sqlite3", data_h.Db_file)
+	db, _ := sql.Open("sqlite3", data_h.DbFile)
 	defer db.Close()
 
 	_, err := db.Exec("DROP TABLE IF EXISTS frecency;")
@@ -52,7 +52,7 @@ func (data_h DataHandler) DropTable() error {
 // CreateTable will create a sql table at `data_h.Db_file`. This will create
 // the file if it does not exists.
 func (data_h DataHandler) CreateTable() error {
-	db, _ := sql.Open("sqlite3", data_h.Db_file)
+	db, _ := sql.Open("sqlite3", data_h.DbFile)
 	defer db.Close()
 	_, err := db.Exec("CREATE TABLE IF NOT EXISTS frecency (path TEXT PRIMARY KEY, score REAL, prefix TEXT, base TEXT);")
 	if err != nil {
@@ -72,7 +72,7 @@ func (data_h DataHandler) UpdatePath(path string) {
 		return
 	}
 
-	db, _ := sql.Open("sqlite3", data_h.Db_file)
+	db, _ := sql.Open("sqlite3", data_h.DbFile)
 	defer db.Close()
 
 	// check if path already exists
@@ -86,7 +86,7 @@ func (data_h DataHandler) UpdatePath(path string) {
 	var update_query string
 	if path_exists_int == 1 {
 		update_query = fmt.Sprintf(`UPDATE frecency SET score=score+%f
-            WHERE path="%s";`, data_h.Inc_weight, path)
+            WHERE path="%s";`, data_h.IncWeight, path)
 
 	} else {
 		// Compute the tokens if needed.
@@ -94,18 +94,18 @@ func (data_h DataHandler) UpdatePath(path string) {
 		prefix := tokens[0]
 		base := tokens[1]
 		update_query = fmt.Sprintf(`INSERT INTO frecency VALUES (%q, %f, %q, %q)`,
-			path, data_h.Inc_weight, prefix, base)
+			path, data_h.IncWeight, prefix, base)
 	}
 	db.Exec(update_query)
 
 	// Decay the scores in the table
-	decay_query := fmt.Sprintf(`UPDATE frecency SET score = %f*score;`, data_h.Decay_factor)
+	decay_query := fmt.Sprintf(`UPDATE frecency SET score = %f*score;`, data_h.DecayFactor)
 	db.Exec(decay_query)
 
 	// Prune scores that are too low
-	if data_h.Prune_threshold > 0 {
+	if data_h.PruneThreshold > 0 {
 		prune_query := fmt.Sprintf(`DELETE FROM frecency WHERE score < %f;`,
-			data_h.Prune_threshold)
+			data_h.PruneThreshold)
 
 		db.Exec(prune_query)
 
@@ -114,7 +114,7 @@ func (data_h DataHandler) UpdatePath(path string) {
 
 // Size returns the number of rows to the table
 func (data_h DataHandler) Size() uint {
-	db, _ := sql.Open("sqlite3", data_h.Db_file)
+	db, _ := sql.Open("sqlite3", data_h.DbFile)
 	defer db.Close()
 
 	row := db.QueryRow("SELECT COUNT(*) FROM frecency;")
@@ -126,7 +126,7 @@ func (data_h DataHandler) Size() uint {
 
 // ListPaths list the paths ordered using their scores and the `descending` flag.
 func (data_h DataHandler) ListPaths(descending bool, scores bool) (string, error) {
-	db, _ := sql.Open("sqlite3", data_h.Db_file)
+	db, _ := sql.Open("sqlite3", data_h.DbFile)
 	defer db.Close()
 
 	var rows *sql.Rows
@@ -181,7 +181,7 @@ func (data_h DataHandler) ListPaths(descending bool, scores bool) (string, error
 
 // GetTopBaseMatch will return the matching path with the highest score.
 func (data_h DataHandler) GetTopBaseMatch(query_base string) (string, bool, error) {
-	db, _ := sql.Open("sqlite3", data_h.Db_file)
+	db, _ := sql.Open("sqlite3", data_h.DbFile)
 	defer db.Close()
 
 	rows, err := db.Query("SELECT path, base FROM frecency ORDER BY score DESC;")
@@ -201,7 +201,7 @@ func (data_h DataHandler) GetTopBaseMatch(query_base string) (string, bool, erro
 }
 
 func (data_h DataHandler) GetTopPrefixBaseMatch(query_prefix, query_base string) (string, bool, error) {
-	db, _ := sql.Open("sqlite3", data_h.Db_file)
+	db, _ := sql.Open("sqlite3", data_h.DbFile)
 	defer db.Close()
 
 	rows, err := db.Query("SELECT path, prefix, base FROM frecency ORDER BY score DESC;")

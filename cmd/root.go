@@ -10,10 +10,10 @@ import (
 )
 
 var DataHandler = data.DataHandler{
-	Db_file:         "",
-	Inc_weight:      100,
-	Decay_factor:    0.99,
-	Prune_threshold: 1.0,
+	DbFile:         "",
+	IncWeight:      100,
+	DecayFactor:    0.99,
+	PruneThreshold: 1.0,
 }
 
 var rootCmd = &cobra.Command{
@@ -32,19 +32,19 @@ func init() {
 	// Set default data file
 	var dotNikdotdb string
 	dotNikdotdb, _ = homedir.Expand("~/.nik.db")
-	DataHandler.Db_file = dotNikdotdb
+	DataHandler.DbFile = dotNikdotdb
 
 	// Read environment variables for NIK_DBFILE, NIK_INCWEIGHT, NIK_DECAYFACTOR, NIK_PRUNETHRESHOLD
 	if dbFileStr := os.Getenv("NIK_DBFILE"); len(dbFileStr) > 0 {
-		DataHandler.Db_file = dbFileStr
+		DataHandler.DbFile = dbFileStr
 	}
 	if incWeightStr := os.Getenv("NIK_INCWEIGHT"); len(incWeightStr) > 0 {
-		DataHandler.Inc_weight, _ = strconv.ParseFloat(incWeightStr, 64)
+		DataHandler.IncWeight, _ = strconv.ParseFloat(incWeightStr, 64)
 	}
 	if decayFactorStr := os.Getenv("NIK_DECAYFACTOR"); len(decayFactorStr) > 0 {
-		DataHandler.Decay_factor, _ = strconv.ParseFloat(decayFactorStr, 64)
+		DataHandler.DecayFactor, _ = strconv.ParseFloat(decayFactorStr, 64)
 	}
 	if pruneThresholdStr := os.Getenv("NIK_PRUNETHRESHOLD"); len(pruneThresholdStr) > 0 {
-		DataHandler.Prune_threshold, _ = strconv.ParseFloat(pruneThresholdStr, 64)
+		DataHandler.PruneThreshold, _ = strconv.ParseFloat(pruneThresholdStr, 64)
 	}
 }
