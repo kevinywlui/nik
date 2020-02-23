@@ -14,9 +14,9 @@ import (
 
 type DataHandler struct {
 	Db_file         string
-	Inc_weight      float32
-	Decay_factor    float32
-	Prune_threshold float32
+	Inc_weight      float64
+	Decay_factor    float64
+	Prune_threshold float64
 }
 
 // isFile returns whether path exists on the filesystem

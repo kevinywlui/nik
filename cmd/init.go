@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"github.com/kevinywlui/nik/internal/config_nik"
 	"github.com/spf13/cobra"
 )
 
@@ -9,8 +8,7 @@ var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initialize the database",
 	Run: func(cmd *cobra.Command, args []string) {
-		dh := config_nik.DataHandler
-		dh.CreateTable()
+		DataHandler.CreateTable()
 	},
 }
 
